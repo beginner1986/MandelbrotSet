@@ -1,4 +1,8 @@
 #include <iostream>
+#include <tbb/tbb.h>
+#include <random>
+
+#include "Point.h"
 #include "Image.h"
 
 double makeReal(int x, int width, double minIm, double maxIm);
@@ -8,21 +12,51 @@ void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, d
 
 int main()
 {
-	// test inputs
 	int width = 1024;
 	int height = 768;
 	int maxN = 255;
 	double minRe = -2.0, maxRe = 2.0;
 	double minIm = -1.5, maxIm = 1.5;
 
-	// new image
-	Image image("img", width, height);
+	int count = 50;
 
-	// generate fractal
-	fractal(image, maxN, minRe, maxRe, minIm, maxIm);
+	tbb::flow::graph graph;
+	tbb::flow::source_node<int> source(graph,
+		[&count, &maxN](int& n) -> bool {
+			if (count < maxN)
+			{
+				n = count;
+				count += 50;
+				return true;
+			}
+			else
+				return false;
+		},
+		false
+	);
+	tbb::flow::function_node<int, Image*> calculate(graph,
+		tbb::flow::unlimited,
+		[=](int n) 
+		{
+			std::string fileName = "img" + std::to_string(n);
+			Image* image = new Image(fileName, width, height);
+			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			return	image;
+		}
+	);
+	tbb::flow::function_node<Image*> finalize(graph,
+		tbb::flow::unlimited,
+		[](Image *image) 
+		{
+			image->saveFile();
+			delete image;
+		}
+	);
 
-	// save result to image file
-	image.saveFile();
+	tbb::flow::make_edge(source, calculate);
+	tbb::flow::make_edge(calculate, finalize);
+	source.activate();
+	graph.wait_for_all();
 
 	return 0;
 }
@@ -70,8 +104,8 @@ void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, d
 			int n = findValue(cr, ci, maxN);
 
 			int r = (n % image.getMaxColor());
-			int g = (0 % image.getMaxColor());
-			int b = (0 % image.getMaxColor());
+			int g = (n % image.getMaxColor());
+			int b = (n % image.getMaxColor());
 
 			image.setPixel(x, y, r, g, b);
 		}
