@@ -34,7 +34,7 @@ int main()
 		},
 		false
 	);
-	tbb::flow::function_node<int, Image*> calculate(graph,
+	tbb::flow::function_node<int, Image*> calculate1(graph,
 		tbb::flow::unlimited,
 		[=](int n) 
 		{
@@ -44,17 +44,31 @@ int main()
 			return	image;
 		}
 	);
-	tbb::flow::function_node<Image*> finalize(graph,
+	tbb::flow::function_node<int, Image*> calculate2(graph,
 		tbb::flow::unlimited,
-		[](Image *image) 
+		[=](int n)
 		{
-			image->saveFile();
-			delete image;
+			std::string fileName = "img" + std::to_string(n);
+			Image* image = new Image(fileName, width, height);
+			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			return	image;
+		}
+	);
+	tbb::flow::join_node<tbb::flow::tuple<Image*, Image*> > merge(graph);
+	tbb::flow::function_node<tbb::flow::tuple<Image*, Image*> > finalize(graph,
+		tbb::flow::unlimited,
+		[](tbb::flow::tuple<Image*, Image*> images)
+		{
+			tbb::flow::get<0>(images)->saveFile();
+			tbb::flow::get<1>(images)->saveFile();
 		}
 	);
 
-	tbb::flow::make_edge(source, calculate);
-	tbb::flow::make_edge(calculate, finalize);
+	tbb::flow::make_edge(source, calculate1);
+	tbb::flow::make_edge(source, calculate2);
+	tbb::flow::make_edge(calculate1, tbb::flow::input_port<0>(merge));
+	tbb::flow::make_edge(calculate2, tbb::flow::input_port<1>(merge));
+	tbb::flow::make_edge(merge, finalize);
 	source.activate();
 	graph.wait_for_all();
 
