@@ -4,7 +4,7 @@
 Each PPM image consists of the following:
 
     1. A "magic number" for identifying the file type. A ppm image's magic number is
-        the two characters "P6".
+        the two characters "P3".
     2. Whitespace (blanks, TABs, CRs, LFs).
     3. A width, formatted as ASCII characters in decimal.
     4. Whitespace.
@@ -40,7 +40,7 @@ Image::Image(std::string fileName, int width, int height, int maxColor)
         fileName += ".ppm";
 
     // open the file
-    file.open(fileName, std::fstream::out);
+    file.open(fileName, std::ofstream::out);
 
     if (!file)
     {
@@ -49,7 +49,7 @@ Image::Image(std::string fileName, int width, int height, int maxColor)
     }
 
     // create file header string
-    this->fileHeader = "P6 "        // 1, 2
+    this->fileHeader = "P3 "        // 1, 2
         + std::to_string(width)     // 3
         + " "                       // 4
         + std::to_string(height)    // 5

@@ -14,7 +14,7 @@ private:
     const int height;
     const int maxval;
     std::string fileHeader;
-    std::fstream file;
+    std::ofstream file;
 
 public:
     // constructor
