@@ -8,7 +8,7 @@
 double makeReal(int x, int width, double minIm, double maxIm);
 double makeImaginary(int y, int height, double minIm, double maxIm);
 int findValue(double cr, double ci, int maxN);
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm);
+void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Point palette);
 
 int main()
 {
@@ -18,15 +18,15 @@ int main()
 	double minRe = -2.0, maxRe = 2.0;
 	double minIm = -1.5, maxIm = 1.5;
 
-	int count = 50;
+	int count = 0;
 
 	tbb::flow::graph graph;
-	tbb::flow::source_node<int> source(graph,
-		[&count, &maxN](int& n) -> bool {
-			if (count < maxN)
+	tbb::flow::source_node<double> source(graph,
+		[&count, minRe](double& border) -> bool {
+			if (count < 2)
 			{
-				n = count;
-				count += 50;
+				border = minRe + 2.0 * (double)count;
+				count++;
 				return true;
 			}
 			else
@@ -34,23 +34,29 @@ int main()
 		},
 		false
 	);
-	tbb::flow::function_node<int, Image*> calculate1(graph,
+	tbb::flow::function_node<double, Image*> calculate1(graph,
 		tbb::flow::unlimited,
-		[=](int n) 
+		[=](double border) 
 		{
-			std::string fileName = "img" + std::to_string(n);
+			std::random_device rd;
+			std::uniform_int_distribution<int> rng(1, 256);
+			Point palette(rng(rd), rng(rd), rng(rd));
+			std::string fileName = "img" + std::to_string(border);
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, border, border + 2.0, minIm, maxIm, palette);
 			return	image;
 		}
 	);
-	tbb::flow::function_node<int, Image*> calculate2(graph,
+	tbb::flow::function_node<double, Image*> calculate2(graph,
 		tbb::flow::unlimited,
-		[=](int n)
+		[=](double border)
 		{
-			std::string fileName = "img" + std::to_string(n);
+			std::random_device rd;
+			std::uniform_int_distribution<int> rng(1, 256);
+			Point palette(rng(rd), rng(rd), rng(rd));
+			std::string fileName = "img" + std::to_string(border);
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, border, border + 2.0, minIm, maxIm, palette);
 			return	image;
 		}
 	);
@@ -105,7 +111,7 @@ int findValue(double cr, double ci, int maxN)
 	return n;
 }
 
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm)
+void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Point palette)
 {
 	for (int y = 0; y < image.getHeight(); y++)
 	{
@@ -117,9 +123,9 @@ void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, d
 
 			int n = findValue(cr, ci, maxN);
 
-			int r = (n % image.getMaxColor());
-			int g = (n % image.getMaxColor());
-			int b = (n % image.getMaxColor());
+			int r = ((n * palette.getR()) % image.getMaxColor());
+			int g = ((n * palette.getG()) % image.getMaxColor());
+			int b = ((n * palette.getB()) % image.getMaxColor());
 
 			image.setPixel(x, y, r, g, b);
 		}
