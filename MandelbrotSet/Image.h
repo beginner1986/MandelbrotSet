@@ -10,9 +10,9 @@
 class Image
 {
 private:
-    int width;
-    int height;
-    int maxval;
+    const int width;
+    const int height;
+    const int maxval;
     std::string fileHeader;
     std::fstream file;
 

@@ -5,10 +5,6 @@
     <ClCompile Include="Image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Image.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="MandelbrotSet.rc" />
   </ItemGroup>
 </Project>
