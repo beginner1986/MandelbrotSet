@@ -35,6 +35,11 @@ void Image::setPixel(int x, int y, int r, int g, int b)
     content[x + y * width] = Pixel(r, g, b);
 }
 
+void Image::setPixel(int x, int y, Pixel p)
+{
+    content[x + y * width] = p;
+}
+
 Image::~Image() 
 { 
     file.close(); 
