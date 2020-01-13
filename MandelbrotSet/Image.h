@@ -30,6 +30,7 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     int getMaxColor() const { return maxval; }
+    Pixel getPixel(int x, int y) const { return content[x + y * width]; }
 
     // setters
     void setPixel(int x, int y, int r, int g, int b);
