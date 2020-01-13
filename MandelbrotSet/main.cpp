@@ -2,13 +2,13 @@
 #include <tbb/tbb.h>
 #include <random>
 
-#include "Point.h"
+#include "Pixel.h"
 #include "Image.h"
 
 double makeReal(int x, int width, double minIm, double maxIm);
 double makeImaginary(int y, int height, double minIm, double maxIm);
 int findValue(double cr, double ci, int maxN);
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Point palette);
+void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Pixel palette);
 
 int main()
 {
@@ -40,7 +40,7 @@ int main()
 		{
 			std::random_device rd;
 			std::uniform_int_distribution<int> rng(1, 256);
-			Point palette(rng(rd), rng(rd), rng(rd));
+			Pixel palette(rng(rd), rng(rd), rng(rd));
 			std::string fileName = "img" + std::to_string(border);
 			Image* image = new Image(fileName, width, height);
 			fractal(*image, maxN, border, border + 2.0, minIm, maxIm, palette);
@@ -53,7 +53,7 @@ int main()
 		{
 			std::random_device rd;
 			std::uniform_int_distribution<int> rng(1, 256);
-			Point palette(rng(rd), rng(rd), rng(rd));
+			Pixel palette(rng(rd), rng(rd), rng(rd));
 			std::string fileName = "img" + std::to_string(border);
 			Image* image = new Image(fileName, width, height);
 			fractal(*image, maxN, border, border + 2.0, minIm, maxIm, palette);
@@ -111,7 +111,7 @@ int findValue(double cr, double ci, int maxN)
 	return n;
 }
 
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Point palette)
+void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm, Pixel palette)
 {
 	for (int y = 0; y < image.getHeight(); y++)
 	{

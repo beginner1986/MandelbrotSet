@@ -19,12 +19,12 @@ Image::Image(std::string fileName, int width, int height, int maxColor)
     file << fileHeader;
 
     // allocate memory
-    content = new Point[width * height];
+    content = new Pixel[width * height];
 }
 
 void Image::saveFile()
 {
-    for (size_t i = 0; i < width * height; i++)
+    for (int i = 0; i < width * height; i++)
     {
         file << content[i].toString() << (i % width == 0 ? '\n' : ' ');
     }
@@ -32,7 +32,12 @@ void Image::saveFile()
 
 void Image::setPixel(int x, int y, int r, int g, int b)
 {
-    content[x + y * width] = Point(r, g, b);
+    content[x + y * this->width] = Pixel(r, g, b);
+}
+
+void Image::setPixel(int x, int y, const Pixel p)
+{
+    content[x + y * this->width] = p;
 }
 
 Image::~Image() 

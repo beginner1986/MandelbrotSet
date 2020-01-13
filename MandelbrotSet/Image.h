@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cctype>
 
-#include "Point.h"
+#include "Pixel.h"
 
 // class representiong *.ppm image
 class Image
@@ -17,7 +17,7 @@ private:
     const int maxval;
     std::string fileHeader;
     std::ofstream file;
-    Point* content;
+    Pixel* content;
 
 public:
     // constructor
@@ -30,9 +30,11 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     int getMaxColor() const { return maxval; }
+    Pixel getPixel(int x, int y) const { return content[x + y * width]; }
 
     // setters
     void setPixel(int x, int y, int r, int g, int b);
+    void setPixel(int x, int y, const Pixel p);
 
     // destructor
     ~Image();
