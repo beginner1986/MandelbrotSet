@@ -10,7 +10,7 @@
     <ClInclude Include="Image.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="Point.h">
+    <ClInclude Include="Pixel.h">
       <Filter>data</Filter>
     </ClInclude>
   </ItemGroup>

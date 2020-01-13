@@ -19,7 +19,7 @@ Image::Image(std::string fileName, int width, int height, int maxColor)
     file << fileHeader;
 
     // allocate memory
-    content = new Point[width * height];
+    content = new Pixel[width * height];
 }
 
 void Image::saveFile()
@@ -32,7 +32,7 @@ void Image::saveFile()
 
 void Image::setPixel(int x, int y, int r, int g, int b)
 {
-    content[x + y * width] = Point(r, g, b);
+    content[x + y * width] = Pixel(r, g, b);
 }
 
 Image::~Image() 

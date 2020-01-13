@@ -2,7 +2,7 @@
 #include <tbb/tbb.h>
 #include <random>
 
-#include "Point.h"
+#include "Pixel.h"
 #include "Image.h"
 
 double makeReal(int x, int width, double minIm, double maxIm);
@@ -18,15 +18,14 @@ int main()
 	double minRe = -2.0, maxRe = 2.0;
 	double minIm = -1.5, maxIm = 1.5;
 
-	int count = 50;
+	int count = 0;
 
 	tbb::flow::graph graph;
 	tbb::flow::source_node<int> source(graph,
-		[&count, &maxN](int& n) -> bool {
-			if (count < maxN)
+		[&count, maxN](int& n) -> bool {
+			if (count < 2)
 			{
-				n = count;
-				count += 50;
+				n = count++;
 				return true;
 			}
 			else
@@ -38,9 +37,9 @@ int main()
 		tbb::flow::unlimited,
 		[=](int n) 
 		{
-			std::string fileName = "img" + std::to_string(n);
+			std::string fileName = "img1";
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, minRe, maxRe, minIm, maxIm);
 			return	image;
 		}
 	);
@@ -48,9 +47,9 @@ int main()
 		tbb::flow::unlimited,
 		[=](int n)
 		{
-			std::string fileName = "img" + std::to_string(n);
+			std::string fileName = "img2";
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, minRe, maxRe, minIm, maxIm);
 			return	image;
 		}
 	);
