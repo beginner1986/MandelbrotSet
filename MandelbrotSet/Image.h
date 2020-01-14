@@ -34,6 +34,7 @@ public:
 
     // setters
     void setPixel(int x, int y, int r, int g, int b);
+
     void setPixel(int x, int y, const Pixel p);
 
     // destructor
