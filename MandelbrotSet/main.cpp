@@ -166,12 +166,12 @@ Image* mergeImages(const Image* img1, const Image* img2)
 
 	for (int y = 0; y < img1->getHeight(); y++)
 	{
-		for (int x = 0; x < img1->getHeight(); x++)
+		for (int x = 0; x < width; x++)
 		{
 			if(x < img1->getWidth())
 				result->setPixel(x, y, img1->getPixel(x, y));
 			else
-				result->setPixel(x + img1->getWidth(), y, img2->getPixel(x, y));
+				result->setPixel(x, y, img2->getPixel(x - img1->getWidth(), y));
 		}
 	}
 
