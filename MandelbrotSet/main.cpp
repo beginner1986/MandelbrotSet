@@ -21,6 +21,7 @@ int main()
 	int maxColor = 255;
 
 	int count = 0;
+
 	double step = 1.75;
 	Image* img1, * img2, * result;
 
@@ -40,6 +41,7 @@ int main()
 	);
 	tbb::flow::function_node<double, Image*> calculate1(graph,
 		tbb::flow::unlimited,
+
 		[=](double bound)
 		{
 			std::random_device seed;
@@ -49,12 +51,12 @@ int main()
 			std::string fileName = "img1";
 			Image* image = new Image(fileName, width, height, maxColor);
 			fractal(*image, maxN, bound, bound + step, minIm, maxIm, palette);
-
 			return	image;
 		}
 	);
 	tbb::flow::function_node<double, Image*> calculate2(graph,
 		tbb::flow::unlimited,
+
 		[=](double bound)
 		{
 			std::random_device seed;

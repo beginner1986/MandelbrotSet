@@ -24,7 +24,7 @@ Image::Image(std::string fileName, int width, int height, int maxColor)
 
 void Image::saveFile()
 {
-    for (size_t i = 0; i < width * height; i++)
+    for (int i = 0; i < width * height; i++)
     {
         file << content[i].toString() << (i % width == 0 ? '\n' : ' ');
     }
@@ -32,12 +32,12 @@ void Image::saveFile()
 
 void Image::setPixel(int x, int y, int r, int g, int b)
 {
-    content[x + y * width] = Pixel(r, g, b);
+    content[x + y * this->width] = Pixel(r, g, b);
 }
 
-void Image::setPixel(int x, int y, Pixel p)
+void Image::setPixel(int x, int y, const Pixel p)
 {
-    content[x + y * width] = p;
+    content[x + y * this->width] = p;
 }
 
 Image::~Image() 
