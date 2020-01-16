@@ -1,9 +1,10 @@
 #include <iostream>
 #include <tbb/tbb.h>
-#include <random>
+#include <vector>
 
 #include "Pixel.h"
 #include "Image.h"
+#include "InputData.h"
 
 double makeReal(const int x, const int width, const double minRe, const double maxRe);
 double makeImaginary(const int y, const int height, const double minIm, const double maxIm);
@@ -18,16 +19,20 @@ int main()
 	int maxN = 255;
 	double minRe = -2.0, maxRe = 2.0;
 	double minIm = -1.5, maxIm = 1.5;
+	std::string resultFolder = "products\\";
 
-	int count = 1;
+	std::vector<InputData> input;
+	input.push_back(InputData());
+	input.push_back(InputData(-1.0, 0.0, 0.0, 1.0));
+
+	int count = 0;
 
 	tbb::flow::graph graph;
-	tbb::flow::source_node<int> source(graph,
-		[&count](int& n) -> bool {
-			const int limit = 3;
-			if (count < limit)
+	tbb::flow::source_node<InputData> source(graph,
+		[&](InputData& in) -> bool {
+			if (count < input.size())
 			{
-				n = count++;
+				in = input[count++];
 				return true;
 			}
 			else
@@ -35,23 +40,23 @@ int main()
 		},
 		false
 	);
-	tbb::flow::function_node<int, Image*> calculate1(graph,
+	tbb::flow::function_node<InputData, Image*> calculate1(graph,
 		tbb::flow::unlimited,
-		[=](int n) -> Image*
+		[=](InputData in) -> Image*
 		{
 			Pixel palette(20, 1, 1);
-			std::string fileName = "img" + std::to_string(n) + "v1";
+			std::string fileName = resultFolder + "img" + std::to_string(count) + "red";
 			Image* image = new Image(fileName, width, height);
 			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
 			return	image;
 		}
 	);
-	tbb::flow::function_node<int, Image*> calculate2(graph,
+	tbb::flow::function_node<InputData, Image*> calculate2(graph,
 		tbb::flow::unlimited,
-		[=](int n) -> Image*
+		[=](InputData in) -> Image*
 		{
 			Pixel palette(1, 20, 1);
-			std::string fileName = "img" + std::to_string(n) + "v2";
+			std::string fileName = resultFolder + "img" + std::to_string(count) + "green";
 			Image* image = new Image(fileName, width, height);
 			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
 			return	image;
