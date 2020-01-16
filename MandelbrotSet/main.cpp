@@ -11,7 +11,6 @@ double makeImaginary(const int y, const int height, const double minIm, const do
 int findValue(const double cr, const double ci, const int maxN);
 void fractal(Image& image, const int maxN, const double minRe, const double maxRe, 
 	const double minIm, const double maxIm, const Pixel palette);
-
 Image* mergeImages(const std::string resultFolder, const Image& img1, const Image& img2, const int index);
 
 int main()
@@ -144,6 +143,7 @@ int main()
 	}
 	*/
 
+
 	return 0;
 }
 
@@ -189,7 +189,7 @@ void fractal(Image& image, const int maxN, const double minRe, const double maxR
 			double ci = makeImaginary(y, image.getHeight(), minIm, maxIm);
 
 			int n = findValue(cr, ci, maxN);
-
+      
 			int r = ((n * palette.getR()) % image.getMaxColor());
 			int g = ((n * palette.getG()) % image.getMaxColor());
 			int b = ((n * palette.getB()) % image.getMaxColor());
@@ -197,6 +197,8 @@ void fractal(Image& image, const int maxN, const double minRe, const double maxR
 			image.setPixel(x, y, Pixel(r, g, b));
 		}
 	}
+
+	return result;
 }
 
 Image* mergeImages(const std::string resultFolder, const Image& img1, const Image& img2, const int index)

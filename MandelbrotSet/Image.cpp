@@ -32,7 +32,12 @@ void Image::saveFile()
 
 void Image::setPixel(int x, int y, int r, int g, int b)
 {
-    content[x + y * width] = Pixel(r, g, b);
+    content[x + y * this->width] = Pixel(r, g, b);
+}
+
+void Image::setPixel(int x, int y, const Pixel p)
+{
+    content[x + y * this->width] = p;
 }
 
 Image::~Image() 

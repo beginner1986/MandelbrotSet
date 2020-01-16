@@ -36,6 +36,8 @@ public:
     void setPixel(int x, int y, int r, int g, int b);
     void setPixel(int x, int y, Pixel p) { content[x + y * width] = p; }
 
+    void setPixel(int x, int y, const Pixel p);
+
     // destructor
     ~Image();
 
