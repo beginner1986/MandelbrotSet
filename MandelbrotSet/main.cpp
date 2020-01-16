@@ -12,73 +12,46 @@ int findValue(const double cr, const double ci, const int maxN);
 void fractal(Image& image, const int maxN, const double minRe, const double maxRe, 
 	const double minIm, const double maxIm, const Pixel palette);
 
+Image* mergeImages(const std::string resultFolder, const Image& img1, const Image& img2, const int index);
+
 int main()
 {
 	int width = 320;
 	int height = 240;
 	int maxN = 255;
-	double minRe = -2.0, maxRe = 2.0;
-	double minIm = -1.5, maxIm = 1.5;
 	std::string resultFolder = "products\\";
 
 	std::vector<InputData> input;
 	input.push_back(InputData());
 	input.push_back(InputData(-1.0, 0.0, 0.0, 1.0));
+	input.push_back(InputData(-0.75, -0.25, 0.25, 0.75));
 
-	int count = 0;
+	Image* img1, * img2, * result;
 
-	tbb::flow::graph graph;
-	tbb::flow::source_node<InputData> source(graph,
-		[&](InputData& in) -> bool {
-			if (count < input.size())
-			{
-				in = input[count++];
-				return true;
-			}
-			else
-				return false;
-		},
-		false
-	);
-	tbb::flow::function_node<InputData, Image*> calculate1(graph,
-		tbb::flow::unlimited,
-		[=](InputData in) -> Image*
-		{
-			Pixel palette(20, 1, 1);
-			std::string fileName = resultFolder + "img" + std::to_string(count) + "red";
-			Image* image = new Image(fileName, width, height);
-			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
-			return	image;
-		}
-	);
-	tbb::flow::function_node<InputData, Image*> calculate2(graph,
-		tbb::flow::unlimited,
-		[=](InputData in) -> Image*
-		{
-			Pixel palette(1, 20, 1);
-			std::string fileName = resultFolder + "img" + std::to_string(count) + "green";
-			Image* image = new Image(fileName, width, height);
-			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
-			return	image;
-		}
-	);
-	tbb::flow::join_node<tbb::flow::tuple<Image*, Image*> > join(graph);
-	tbb::flow::function_node<tbb::flow::tuple<Image*, Image*> > finalize(graph,
-		tbb::flow::unlimited,
-		[&](tbb::flow::tuple<Image*, Image*> images)
-		{
-			tbb::flow::get<0>(images)->saveFile();
-			tbb::flow::get<1>(images)->saveFile();
-		}
-	);
+	for (int i = 0; i < input.size(); i++)
+	{
+		InputData in = input[i];
+		Pixel paletteRed(20, 1, 1);
+		Pixel paletteGreen(1, 20, 1);
 
-	tbb::flow::make_edge(join, finalize);
-	tbb::flow::make_edge(calculate1, tbb::flow::input_port<0>(join));
-	tbb::flow::make_edge(calculate2, tbb::flow::input_port<1>(join));
-	tbb::flow::make_edge(source, calculate1);
-	tbb::flow::make_edge(source, calculate2);
-	source.activate();
-	graph.wait_for_all();
+		std::string fileNameRed = resultFolder + "img" + std::to_string(i) + "red";
+		Image* img1 = new Image(fileNameRed, width, height);
+		fractal(*img1, maxN, in.minRe, in.maxRe, in.minIm, in.maxIm, paletteRed);
+
+		std::string fileNameGreen = resultFolder + "img" + std::to_string(i) + "green";
+		Image* img2 = new Image(fileNameGreen, width, height);
+		fractal(*img2, maxN, in.minRe, in.maxRe, in.minIm, in.maxIm, paletteGreen);
+
+		result = mergeImages(resultFolder, *img1, *img2, i);
+
+		img1->saveFile();
+		img2->saveFile();
+		result->saveFile();
+
+		delete img1;
+		delete img2;
+		delete result;
+	}
 
 	return 0;
 }
@@ -113,7 +86,6 @@ int findValue(const double cr, const double ci, const int maxN)
 	return n;
 }
 
-
 void fractal(Image& image, const int maxN, const double minRe, const double maxRe,
 	const double minIm, const double maxIm, const Pixel palette)
 {
@@ -131,7 +103,26 @@ void fractal(Image& image, const int maxN, const double minRe, const double maxR
 			int g = ((n * palette.getG()) % image.getMaxColor());
 			int b = ((n * palette.getB()) % image.getMaxColor());
 
-			image.setPixel(x, y, r, g, b);
+			image.setPixel(x, y, Pixel(r, g, b));
 		}
 	}
+}
+
+Image* mergeImages(const std::string resultFolder, const Image& img1, const Image& img2, const int index)
+{
+	std::string fileNameRed = resultFolder + "img" + std::to_string(index) + "result";
+
+	Image* result = new Image(fileNameRed, img1.getWidth(), img1.getHeight(), img1.getMaxColor());
+
+	for (int y = 0; y < img1.getHeight(); y++)
+	{
+		for (int x = 0; x < img1.getWidth(); x++)
+		{
+			int b = img1.getMaxColor() - (img1.getPixel(x, y).getR() * img2.getPixel(x, y).getG()) % img1.getMaxColor();
+			Pixel p(1, 1, b);
+			result->setPixel(x, y, p);
+		}
+	}
+
+	return result;
 }

@@ -30,9 +30,11 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     int getMaxColor() const { return maxval; }
+    Pixel getPixel(const int x, const int y) const { return content[x + y * width]; }
 
     // setters
     void setPixel(int x, int y, int r, int g, int b);
+    void setPixel(int x, int y, Pixel p) { content[x + y * width] = p; }
 
     // destructor
     ~Image();
