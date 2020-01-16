@@ -24,8 +24,9 @@ int main()
 	std::vector<InputData> input;
 	input.push_back(InputData());
 	input.push_back(InputData(-1.0, 0.0, 0.0, 1.0));
-	input.push_back(InputData(-0.75, -0.25, 0.25, 0.75));
-	int count = 0;
+	input.push_back(InputData(-0.7463, -0.7513, 0.1102, 0.1152));
+	int countSource = 0;
+	int countResults = 1;
 
 	tbb::flow::graph graph;
 
@@ -33,9 +34,9 @@ int main()
 		graph,
 		[&](InputData& in) -> bool
 		{
-			if (count < input.size())
+			if (countSource < input.size())
 			{
-				in = input[count++];
+				in = input[countSource++];
 				return true;
 			}
 			else
@@ -50,7 +51,7 @@ int main()
 		[&](InputData in) -> Image*
 		{
 			Pixel palette(20, 1, 1);
-			std::string fileName = resultFolder + "img" + std::to_string(count) + "red";
+			std::string fileName = resultFolder + "img" + std::to_string(countSource) + "red";
 			Image* result = new Image(fileName, width, height);
 			fractal(*result, maxN, in.minRe, in.maxRe, in.minIm, in.maxIm, palette);
 
@@ -64,7 +65,7 @@ int main()
 		[&](InputData in) -> Image*
 		{
 			Pixel palette(1, 20, 1);
-			std::string fileName = resultFolder + "img" + std::to_string(count) + "green";
+			std::string fileName = resultFolder + "img" + std::to_string(countSource) + "green";
 			Image* result = new Image(fileName, width, height);
 			fractal(*result, maxN, in.minRe, in.maxRe, in.minIm, in.maxIm, palette);
 
@@ -82,7 +83,7 @@ int main()
 		{
 			Image* img1 = tbb::flow::get<0>(input);
 			Image* img2 = tbb::flow::get<1>(input);
-			Image* result = mergeImages(resultFolder, *img1, *img2, count);
+			Image* result = mergeImages(resultFolder, *img1, *img2, countResults++);
 				
 			return std::make_tuple(img1, img2, result);
 		}
@@ -107,8 +108,8 @@ int main()
 
 	tbb::flow::make_edge(merge, save);
 	tbb::flow::make_edge(join, merge);
-	tbb::flow::make_edge(fractalRed, tbb::flow::input_port<0>(join));
-	tbb::flow::make_edge(fractalGreen, tbb::flow::input_port<1>(join));
+	tbb::flow::make_edge(fractalRed, tbb::flow::get<0>(join.input_ports()));
+	tbb::flow::make_edge(fractalGreen, tbb::flow::get<1>(join.input_ports()));
 	tbb::flow::make_edge(source, fractalRed);
 	tbb::flow::make_edge(source, fractalGreen);
 	source.activate();
