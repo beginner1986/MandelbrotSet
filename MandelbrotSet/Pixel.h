@@ -2,7 +2,7 @@
 
 #include <string>
 
-class Point
+class Pixel
 {
 private:
 	int r;
@@ -10,8 +10,8 @@ private:
 	int b;
 
 public:
-	Point() : r(0), g(0), b(0) {};
-	Point(int r, int g, int b) : r(r), g(g), b(b) {};
+	Pixel() : r(0), g(0), b(0) {};
+	Pixel(int r, int g, int b) : r(r), g(g), b(b) {};
 
 	void setR(int r) { this->r = r; }
 	void setG(int g) { this->g = g; }

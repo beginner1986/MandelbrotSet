@@ -2,31 +2,32 @@
 #include <tbb/tbb.h>
 #include <random>
 
-#include "Point.h"
+#include "Pixel.h"
 #include "Image.h"
 
-double makeReal(int x, int width, double minIm, double maxIm);
-double makeImaginary(int y, int height, double minIm, double maxIm);
-int findValue(double cr, double ci, int maxN);
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm);
+double makeReal(const int x, const int width, const double minRe, const double maxRe);
+double makeImaginary(const int y, const int height, const double minIm, const double maxIm);
+int findValue(const double cr, const double ci, const int maxN);
+void fractal(Image& image, const int maxN, const double minRe, const double maxRe, 
+	const double minIm, const double maxIm, const Pixel palette);
 
 int main()
 {
-	int width = 1024;
-	int height = 768;
+	int width = 320;
+	int height = 240;
 	int maxN = 255;
 	double minRe = -2.0, maxRe = 2.0;
 	double minIm = -1.5, maxIm = 1.5;
 
-	int count = 50;
+	int count = 1;
 
 	tbb::flow::graph graph;
 	tbb::flow::source_node<int> source(graph,
-		[&count, &maxN](int& n) -> bool {
-			if (count < maxN)
+		[&count](int& n) -> bool {
+			const int limit = 3;
+			if (count < limit)
 			{
-				n = count;
-				count += 50;
+				n = count++;
 				return true;
 			}
 			else
@@ -36,60 +37,62 @@ int main()
 	);
 	tbb::flow::function_node<int, Image*> calculate1(graph,
 		tbb::flow::unlimited,
-		[=](int n) 
+		[=](int n) -> Image*
 		{
-			std::string fileName = "img" + std::to_string(n);
+			Pixel palette(20, 1, 1);
+			std::string fileName = "img" + std::to_string(n) + "v1";
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
 			return	image;
 		}
 	);
 	tbb::flow::function_node<int, Image*> calculate2(graph,
 		tbb::flow::unlimited,
-		[=](int n)
+		[=](int n) -> Image*
 		{
-			std::string fileName = "img" + std::to_string(n);
+			Pixel palette(1, 20, 1);
+			std::string fileName = "img" + std::to_string(n) + "v2";
 			Image* image = new Image(fileName, width, height);
-			fractal(*image, n, minRe, maxRe, minIm, maxIm);
+			fractal(*image, maxN, minRe, maxRe, minIm, maxIm, palette);
 			return	image;
 		}
 	);
-	tbb::flow::join_node<tbb::flow::tuple<Image*, Image*> > merge(graph);
+	tbb::flow::join_node<tbb::flow::tuple<Image*, Image*> > join(graph);
 	tbb::flow::function_node<tbb::flow::tuple<Image*, Image*> > finalize(graph,
 		tbb::flow::unlimited,
-		[](tbb::flow::tuple<Image*, Image*> images)
+		[&](tbb::flow::tuple<Image*, Image*> images)
 		{
 			tbb::flow::get<0>(images)->saveFile();
 			tbb::flow::get<1>(images)->saveFile();
 		}
 	);
 
+	tbb::flow::make_edge(join, finalize);
+	tbb::flow::make_edge(calculate1, tbb::flow::input_port<0>(join));
+	tbb::flow::make_edge(calculate2, tbb::flow::input_port<1>(join));
 	tbb::flow::make_edge(source, calculate1);
 	tbb::flow::make_edge(source, calculate2);
-	tbb::flow::make_edge(calculate1, tbb::flow::input_port<0>(merge));
-	tbb::flow::make_edge(calculate2, tbb::flow::input_port<1>(merge));
-	tbb::flow::make_edge(merge, finalize);
 	source.activate();
 	graph.wait_for_all();
 
 	return 0;
 }
 
-double makeReal(int x, int width, double minRe, double maxRe)
+double makeReal(const int x, const int width, const double minRe, const double maxRe)
 {
 	double range = maxRe - minRe;
 
 	return x * (range / width) + minRe;
 }
 
-double makeImaginary(int y, int height, double minIm, double maxIm)
+double makeImaginary(const int y, const int height, const double minIm, const double maxIm)
 {
 	double range = maxIm - minIm;
 
 	return y * (range / height) + minIm;
 }
 
-int findValue(double cr, double ci, int maxN)
+int findValue(const double cr, const double ci, const int maxN)
 {
 	int n = 0;
 	double zr = 0.0, zi = 0.0;
@@ -105,7 +108,9 @@ int findValue(double cr, double ci, int maxN)
 	return n;
 }
 
-void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, double maxIm)
+
+void fractal(Image& image, const int maxN, const double minRe, const double maxRe,
+	const double minIm, const double maxIm, const Pixel palette)
 {
 	for (int y = 0; y < image.getHeight(); y++)
 	{
@@ -117,9 +122,9 @@ void fractal(Image& image, int maxN, double minRe, double maxRe, double minIm, d
 
 			int n = findValue(cr, ci, maxN);
 
-			int r = (n % image.getMaxColor());
-			int g = (n % image.getMaxColor());
-			int b = (n % image.getMaxColor());
+			int r = ((n * palette.getR()) % image.getMaxColor());
+			int g = ((n * palette.getG()) % image.getMaxColor());
+			int b = ((n * palette.getB()) % image.getMaxColor());
 
 			image.setPixel(x, y, r, g, b);
 		}
