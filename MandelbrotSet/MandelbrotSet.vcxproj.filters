@@ -13,9 +13,6 @@
     <ClInclude Include="Pixel.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="InputData.h">
-      <Filter>data</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="data">
