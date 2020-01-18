@@ -146,8 +146,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputData.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="InputData.h" />
     <ClInclude Include="Pixel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
