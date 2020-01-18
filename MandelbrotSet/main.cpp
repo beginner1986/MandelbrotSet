@@ -25,8 +25,8 @@ int main()
 	input.push_back(InputData());
 	input.push_back(InputData(-1.0, 0.0, 0.0, 1.0));
 	input.push_back(InputData(-0.7463, -0.7513, 0.1102, 0.1152));
-	int countSource = 0;
-	int countResults = 1;
+	size_t countSource = 0;
+	size_t countResults = 1;
 
 	tbb::flow::graph graph;
 
@@ -50,7 +50,7 @@ int main()
 		tbb::flow::unlimited,
 		[&](InputData in) -> Image*
 		{
-			Pixel palette(20, 1, 1);
+			Pixel palette(5, 1, 1);
 			std::string fileName = resultFolder + "img" + std::to_string(countSource) + "red";
 			std::cout << fileName + '\n';
 
@@ -66,7 +66,7 @@ int main()
 		tbb::flow::unlimited,
 		[&](InputData in) -> Image*
 		{
-			Pixel palette(1, 20, 1);
+			Pixel palette(1, 50, 1);
 			std::string fileName = resultFolder + "img" + std::to_string(countSource) + "green";
 			std::cout << fileName + '\n';
 			Image* result = new Image(fileName, width, height);
@@ -111,8 +111,8 @@ int main()
 
 	tbb::flow::make_edge(merge, save);
 	tbb::flow::make_edge(join, merge);
-	tbb::flow::make_edge(fractalRed, tbb::flow::get<0>(join.input_ports()));
 	tbb::flow::make_edge(fractalGreen, tbb::flow::get<1>(join.input_ports()));
+	tbb::flow::make_edge(fractalRed, tbb::flow::get<0>(join.input_ports()));
 	tbb::flow::make_edge(source, fractalRed);
 	tbb::flow::make_edge(source, fractalGreen);
 	source.activate();
