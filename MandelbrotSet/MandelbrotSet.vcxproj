@@ -146,7 +146,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputData.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Pixel.h" />
   </ItemGroup>
